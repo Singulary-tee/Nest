@@ -129,14 +129,14 @@ wirePhoneclawApkName("Debug")
 wirePhoneclawApkName("Release")
 
 dokka {
-    moduleName.set("ZeroClaw Android")
+    moduleName.set("PhoneClaw Android")
     dokkaPublications.html {
         suppressInheritedMembers.set(true)
     }
     dokkaSourceSets.configureEach {
         sourceLink {
             localDirectory.set(projectDir.resolve("src"))
-            remoteUrl("https://github.com/Natfii/ZeroClaw-Android/tree/main/app/src")
+            remoteUrl("https://github.com/0xBoji/phoneclaw/tree/main/app/src")
         }
         perPackageOption {
             matchingRegex.set(".*\\.generated\\..*")

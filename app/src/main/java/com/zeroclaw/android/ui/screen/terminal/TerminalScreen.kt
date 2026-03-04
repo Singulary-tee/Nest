@@ -415,12 +415,12 @@ private fun TerminalHeader(
                 .fillMaxWidth()
                 .padding(vertical = HEADER_VERTICAL_PADDING_DP.dp)
                 .semantics(mergeDescendants = true) {
-                    contentDescription = "ZeroClaw Terminal, status: $statusLabel"
+                    contentDescription = "PhoneClaw Terminal, status: $statusLabel"
                     liveRegion = LiveRegionMode.Polite
                 },
     ) {
         Text(
-            text = "ZeroClaw Terminal",
+            text = "PhoneClaw Terminal",
             style = TerminalTypography.titleSmall,
             color = MaterialTheme.colorScheme.onSurface,
         )

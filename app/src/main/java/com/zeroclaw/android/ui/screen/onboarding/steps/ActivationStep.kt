@@ -80,7 +80,7 @@ fun ActivationStep(
         )
         Spacer(modifier = Modifier.height(TitleSpacing))
         Text(
-            text = "Review your configuration and start the ZeroClaw daemon.",
+            text = "Review your configuration and start the PhoneClaw daemon.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -136,7 +136,7 @@ private fun PreviewReady() {
                         channels = listOf("Telegram", "Discord"),
                         tunnel = "ngrok",
                         identityFormat = "openclaw",
-                        agentName = "ZeroClaw",
+                        agentName = "PhoneClaw",
                     ),
                 onActivate = {},
             )
@@ -187,7 +187,7 @@ private fun PreviewDark() {
                     ConfigSummary(
                         provider = "openai",
                         model = "gpt-4o",
-                        agentName = "ZeroClaw",
+                        agentName = "PhoneClaw",
                     ),
                 onActivate = {},
             )

@@ -37,7 +37,7 @@ fun OfficialPluginBadge(modifier: Modifier = Modifier) {
         },
         modifier =
             modifier
-                .semantics { contentDescription = "Official ZeroClaw plugin" },
+                .semantics { contentDescription = "Official PhoneClaw plugin" },
         colors =
             SuggestionChipDefaults.suggestionChipColors(
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,

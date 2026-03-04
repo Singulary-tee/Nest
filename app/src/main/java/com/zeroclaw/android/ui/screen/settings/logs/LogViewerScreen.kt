@@ -115,7 +115,7 @@ fun LogViewerScreen(
                             Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_TEXT, text)
-                                putExtra(Intent.EXTRA_SUBJECT, "ZeroClaw Logs")
+                                putExtra(Intent.EXTRA_SUBJECT, "PhoneClaw Logs")
                             }
                         context.startActivity(
                             Intent.createChooser(shareIntent, "Share logs"),

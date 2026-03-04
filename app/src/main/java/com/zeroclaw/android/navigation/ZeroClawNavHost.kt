@@ -307,7 +307,7 @@ fun ZeroClawNavHost(
                             putExtra(Intent.EXTRA_TEXT, payload)
                             putExtra(
                                 Intent.EXTRA_SUBJECT,
-                                "ZeroClaw API Keys (encrypted)",
+                                "PhoneClaw API Keys (encrypted)",
                             )
                         }
                     context.startActivity(

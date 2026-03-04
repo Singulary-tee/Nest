@@ -926,7 +926,7 @@ class ZeroClawDaemonService : Service() {
          */
         const val ACTION_OAUTH_HOLD = "com.zeroclaw.android.action.OAUTH_HOLD"
 
-        private const val TAG = "ZeroClawDaemonService"
+        private const val TAG = "PhoneClawDaemonService"
         private const val POLL_INTERVAL_FOREGROUND_MS = 5_000L
         private const val POLL_INTERVAL_BACKGROUND_MS = 60_000L
         private const val WAKE_LOCK_TAG = "zeroclaw:daemon"

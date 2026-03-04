@@ -280,7 +280,7 @@ internal fun SettingsContent(
         )
         SettingsListItem(
             icon = Icons.Outlined.HealthAndSafety,
-            title = "ZeroClaw Doctor",
+            title = "PhoneClaw Doctor",
             subtitle = "Validate config, keys, and connectivity",
             onClick = { onNavigate(SettingsNavAction.Doctor) },
         )

@@ -113,7 +113,7 @@ fun AboutScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Built with ZeroClaw, a Rust-native AI agent framework.",
+                    text = "Built with PhoneClaw, a Rust-native AI agent framework.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -156,5 +156,5 @@ private fun AboutRow(
 }
 
 private const val CRATE_VERSION_FALLBACK = "unknown"
-private const val GITHUB_URL = "https://github.com/Natfii/ZeroClaw-Android"
-private const val LICENSE_URL = "https://github.com/Natfii/ZeroClaw-Android/blob/main/LICENSE"
+private const val GITHUB_URL = "https://github.com/0xBoji/phoneclaw"
+private const val LICENSE_URL = "https://github.com/0xBoji/phoneclaw/blob/main/LICENSE"

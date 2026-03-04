@@ -83,14 +83,14 @@ fun WelcomeStep(modifier: Modifier = Modifier) {
     ) {
         Image(
             painter = painterResource(R.drawable.zero_crab),
-            contentDescription = "Zero the crab, ZeroClaw mascot",
+            contentDescription = "Zero the crab, PhoneClaw mascot",
             modifier = Modifier.size(HeroImageSize),
         )
 
         Spacer(modifier = Modifier.height(HeroSpacing))
 
         Text(
-            text = "Welcome to ZeroClaw",
+            text = "Welcome to PhoneClaw",
             style = MaterialTheme.typography.headlineLarge,
         )
 
@@ -98,7 +98,7 @@ fun WelcomeStep(modifier: Modifier = Modifier) {
 
         Text(
             text =
-                "ZeroClaw is an AI agent that runs on your device as an " +
+                "PhoneClaw is an AI agent that runs on your device as an " +
                     "always-on service. It connects to messaging platforms " +
                     "like Telegram and Discord, and can be customized with " +
                     "tools, memory, and scheduled tasks.",

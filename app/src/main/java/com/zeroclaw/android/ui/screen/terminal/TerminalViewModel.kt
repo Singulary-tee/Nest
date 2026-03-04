@@ -505,9 +505,9 @@ class TerminalViewModel(
                 }
             val banner =
                 if (isChatProviderConfigured()) {
-                    "ZeroClaw Terminal v$version \u2014 Type /help for commands"
+                    "PhoneClaw Terminal v$version \u2014 Type /help for commands"
                 } else {
-                    "ZeroClaw Terminal v$version \u2014 Admin Console " +
+                    "PhoneClaw Terminal v$version \u2014 Admin Console " +
                         "(no chat provider) \u2014 Type /help for commands"
                 }
             repository.append(content = banner, entryType = ENTRY_TYPE_SYSTEM)

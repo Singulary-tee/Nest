@@ -173,7 +173,7 @@ private fun SummaryBanner(
             modifier = Modifier.padding(16.dp),
         ) {
             Text(
-                text = "ZeroClaw Doctor",
+                text = "PhoneClaw Doctor",
                 style = MaterialTheme.typography.titleMedium,
             )
 

@@ -466,7 +466,7 @@ class ZeroClawApplication :
 
     /** Constants for [ZeroClawApplication]. */
     companion object {
-        private const val TAG = "ZeroClawApp"
+        private const val TAG = "PhoneClawApp"
         private const val CHANNEL_SECRETS_PREFS = "zeroclaw_channel_secrets"
         private const val STALE_OAUTH_PROVIDER = "openai"
         private const val CODEX_PROVIDER = "openai-codex"

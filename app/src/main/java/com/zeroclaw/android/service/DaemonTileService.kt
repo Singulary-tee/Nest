@@ -197,9 +197,9 @@ class DaemonTileService : TileService() {
 
     /** Constants for [DaemonTileService]. */
     companion object {
-        private const val LABEL_RUNNING = "ZeroClaw: Running"
-        private const val LABEL_STOPPED = "ZeroClaw: Stopped"
-        private const val LABEL_ERROR = "ZeroClaw: Error"
-        private const val LABEL_TRANSITIONING = "ZeroClaw: ..."
+        private const val LABEL_RUNNING = "PhoneClaw: Running"
+        private const val LABEL_STOPPED = "PhoneClaw: Stopped"
+        private const val LABEL_ERROR = "PhoneClaw: Error"
+        private const val LABEL_TRANSITIONING = "PhoneClaw: ..."
     }
 }

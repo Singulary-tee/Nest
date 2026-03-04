@@ -696,7 +696,7 @@ private fun PreviewValidationSuccess() {
                 fieldValues = mapOf("bot_token" to "discord-token"),
                 validationResult =
                     ValidationResult.Success(
-                        details = "Bot: ZeroClaw#1234",
+                        details = "Bot: PhoneClaw#1234",
                     ),
                 onFieldChanged = { _, _ -> },
                 onNextSubStep = {},

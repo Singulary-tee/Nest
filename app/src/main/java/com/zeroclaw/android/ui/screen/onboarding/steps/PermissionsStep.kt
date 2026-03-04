@@ -99,7 +99,7 @@ fun PermissionsStep(
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text =
-                "ZeroClaw needs a few permissions to run " +
+                "PhoneClaw needs a few permissions to run " +
                     "reliably in the background.",
             style = MaterialTheme.typography.bodyLarge,
         )

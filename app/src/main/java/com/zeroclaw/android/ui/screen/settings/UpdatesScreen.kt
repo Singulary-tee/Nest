@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.zeroclaw.android.ui.component.SectionHeader
 
 /** GitHub releases URL for the ZeroClaw-Android project. */
-private const val RELEASES_URL = "https://github.com/Natfii/ZeroClaw-Android/releases"
+private const val RELEASES_URL = "https://github.com/0xBoji/phoneclaw/releases"
 
 /**
  * Updates screen with a manual update check button that opens the GitHub

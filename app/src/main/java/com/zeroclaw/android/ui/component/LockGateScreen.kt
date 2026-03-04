@@ -97,7 +97,7 @@ fun LockGateScreen(
             Spacer(modifier = Modifier.height(SPACING_MEDIUM))
 
             Text(
-                text = "ZeroClaw is locked",
+                text = "PhoneClaw is locked",
                 style = MaterialTheme.typography.headlineSmall,
                 modifier =
                     Modifier.semantics {
@@ -182,7 +182,7 @@ fun LockGateScreen(
             text = {
                 Text(
                     "To reset your PIN, clear the app's data " +
-                        "from Android Settings > Apps > ZeroClaw > Storage > Clear Data. " +
+                        "from Android Settings > Apps > PhoneClaw > Storage > Clear Data. " +
                         "This will remove all local settings.",
                 )
             },

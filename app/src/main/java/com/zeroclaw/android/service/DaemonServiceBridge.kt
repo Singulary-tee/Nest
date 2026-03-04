@@ -406,7 +406,7 @@ class DaemonServiceBridge(
      * Safe to call from the main thread; the underlying **blocking** FFI
      * call is dispatched to [Dispatchers.IO].
      *
-     * @param agentName Name for the AI agent (empty defaults to "ZeroClaw").
+     * @param agentName Name for the AI agent (empty defaults to "PhoneClaw").
      * @param userName Name of the human user (empty defaults to "User").
      * @param timezone IANA timezone ID (empty defaults to "UTC").
      * @param communicationStyle Preferred tone (empty uses upstream default).

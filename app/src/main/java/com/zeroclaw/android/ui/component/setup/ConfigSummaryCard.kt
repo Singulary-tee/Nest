@@ -269,7 +269,7 @@ private fun PreviewFullyConfigured() {
                         channels = listOf("Telegram", "Discord"),
                         tunnel = "ngrok",
                         identityFormat = "openclaw",
-                        agentName = "ZeroClaw",
+                        agentName = "PhoneClaw",
                     ),
             )
         }
@@ -341,7 +341,7 @@ private fun PreviewDark() {
                         channels = listOf("Telegram"),
                         tunnel = "none",
                         identityFormat = "openclaw",
-                        agentName = "ZeroClaw",
+                        agentName = "PhoneClaw",
                     ),
             )
         }

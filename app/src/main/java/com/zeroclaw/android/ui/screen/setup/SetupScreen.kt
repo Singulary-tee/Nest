@@ -143,7 +143,7 @@ internal fun SetupContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Setting up ZeroClaw",
+                text = "Setting up PhoneClaw",
                 style = MaterialTheme.typography.headlineMedium,
             )
             Text(

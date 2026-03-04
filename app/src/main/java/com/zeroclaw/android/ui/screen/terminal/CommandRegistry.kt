@@ -202,7 +202,7 @@ object CommandRegistry {
             ),
             SlashCommand(
                 name = "version",
-                description = "Show ZeroClaw version",
+                description = "Show PhoneClaw version",
                 toExpression = { "version()" },
             ),
             SlashCommand(

@@ -104,7 +104,7 @@ private val FORMAT_OPTIONS =
         FormatOption(
             id = "aieos",
             title = "AIEOS",
-            description = "ZeroClaw's native identity format with extended metadata support.",
+            description = "PhoneClaw's native identity format with extended metadata support.",
         ),
         FormatOption(
             id = "openclaw",
@@ -379,7 +379,7 @@ private fun PreviewFilled() {
     ZeroClawTheme {
         Surface {
             IdentityConfigFlow(
-                agentName = "ZeroClaw",
+                agentName = "PhoneClaw",
                 userName = "Alice",
                 timezone = "Europe/London",
                 communicationStyle = "professional",
@@ -424,7 +424,7 @@ private fun PreviewDark() {
     ZeroClawTheme {
         Surface {
             IdentityConfigFlow(
-                agentName = "ZeroClaw",
+                agentName = "PhoneClaw",
                 userName = "Bob",
                 timezone = "UTC",
                 communicationStyle = "concise",

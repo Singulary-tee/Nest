@@ -170,7 +170,7 @@ fun ZeroClawAppShell(
                         title = {
                             TopBarTitle(
                                 serviceState = serviceState,
-                                title = screenTitleFor(currentDestination) ?: "ZeroClaw",
+                                title = screenTitleFor(currentDestination) ?: "PhoneClaw",
                             )
                         },
                         navigationIcon = {
@@ -252,7 +252,7 @@ private fun screenTitleFor(destination: NavDestination?): String? {
 @Composable
 private fun TopBarTitle(
     serviceState: ServiceState,
-    title: String = "ZeroClaw",
+    title: String = "PhoneClaw",
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(title)
