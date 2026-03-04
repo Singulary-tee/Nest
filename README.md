@@ -7,7 +7,7 @@
 [![CI](https://github.com/Natfii/ZeroClaw-Android/actions/workflows/ci.yml/badge.svg)](https://github.com/Natfii/ZeroClaw-Android/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![API 26+](https://img.shields.io/badge/API-26%2B-brightgreen.svg)](https://developer.android.com/about/versions/oreo)
-[![Latest Release](https://img.shields.io/github/v/release/Natfii/ZeroClaw-Android?include_prereleases&label=release)](https://github.com/Natfii/ZeroClaw-Android/releases)
+[![Latest Release](https://img.shields.io/github/v/release/0xboji/PhoneClaw?include_prereleases&label=release)](https://github.com/0xboji/PhoneClaw/releases)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Rust](https://img.shields.io/badge/Rust-stable-DEA584.svg?logo=rust&logoColor=white)](https://www.rust-lang.org)
 [![Providers](https://img.shields.io/badge/Providers-32%2B-blue.svg)](https://github.com/Natfii/ZeroClaw-Android#supported-providers)
@@ -18,7 +18,7 @@ ZeroClaw-Android turns your Android phone into an always-on AI agent host. Not a
 
 Got an old phone? Give it a new job.
 
-1. **Download** the latest APK from [GitHub Releases](https://github.com/Natfii/ZeroClaw-Android/releases)
+1. **Download** the latest APK from [GitHub Releases](https://github.com/0xboji/PhoneClaw/releases)
 2. **Add a provider** -- paste your API key or point to a local Ollama instance
 3. **Create an agent** -- pick a model and configure its behavior
 4. **Tap Start** -- the daemon launches as a foreground service and runs until you stop it
