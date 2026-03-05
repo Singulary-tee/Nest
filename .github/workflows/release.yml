@@ -65,7 +65,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Configure release signing (with safe fallback)
+      - name: Configure release signing
         id: signing
         env:
           RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
@@ -76,31 +76,35 @@ jobs:
           set -euo pipefail
 
           if [ -z "${RELEASE_KEYSTORE_BASE64:-}" ] || [ -z "${RELEASE_STORE_PASSWORD:-}" ] || [ -z "${RELEASE_KEY_ALIAS:-}" ] || [ -z "${RELEASE_KEY_PASSWORD:-}" ]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Release signing secrets are missing. Building unsigned APK."
-            exit 0
+            echo "::error::Release signing secrets are missing. Refusing to publish unsigned APK."
+            exit 1
           fi
 
           printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > release.jks
 
           if ! keytool -list -keystore release.jks -storepass "$RELEASE_STORE_PASSWORD" -alias "$RELEASE_KEY_ALIAS" >/dev/null 2>&1; then
             rm -f release.jks
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Keystore validation failed. Building unsigned APK."
-            exit 0
+            echo "::error::Keystore validation failed. Refusing to publish unsigned APK."
+            exit 1
           fi
 
           printf 'RELEASE_STORE_FILE=../release.jks\n' > local.properties
           printf 'RELEASE_STORE_PASSWORD=%s\n' "$RELEASE_STORE_PASSWORD" >> local.properties
           printf 'RELEASE_KEY_ALIAS=%s\n' "$RELEASE_KEY_ALIAS" >> local.properties
           printf 'RELEASE_KEY_PASSWORD=%s\n' "$RELEASE_KEY_PASSWORD" >> local.properties
-          echo "enabled=true" >> "$GITHUB_OUTPUT"
 
       - name: Build release AAR
         run: ./gradlew :lib:assembleRelease
 
       - name: Build release APK
         run: ./gradlew :app:assembleRelease
+
+      - name: Verify APK is signed
+        env:
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+        run: |
+          apksigner verify --print-certs app/build/outputs/apk/release/phoneclaw.apk | tee /tmp/apk-signing.txt
+          grep -q "Signer #1 certificate DN:" /tmp/apk-signing.txt
 
       - name: Clean up signing material
         if: always()
