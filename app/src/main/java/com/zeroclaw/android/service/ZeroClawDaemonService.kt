@@ -38,6 +38,7 @@ import com.zeroclaw.ffi.FfiException
 import com.zeroclaw.ffi.validateConfig
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -219,49 +220,57 @@ class ZeroClawDaemonService : Service() {
         acquireWakeLock()
 
         serviceScope.launch(ioDispatcher) {
-            val settings = settingsRepository.settings.first()
-            val effectiveSettings = resolveEffectiveDefaults(settings)
-            val apiKey = apiKeyRepository.getByProviderFresh(effectiveSettings.defaultProvider)
+            try {
+                val settings = settingsRepository.settings.first()
+                val effectiveSettings = resolveEffectiveDefaults(settings)
+                val apiKey = apiKeyRepository.getByProviderFresh(effectiveSettings.defaultProvider)
 
-            val globalConfig =
-                buildGlobalTomlConfig(effectiveSettings, apiKey)
-            val baseToml = ConfigTomlBuilder.build(globalConfig)
-            val channelsToml =
-                ConfigTomlBuilder.buildChannelsToml(
-                    channelConfigRepository.getEnabledWithSecrets(),
-                )
-            val agentsToml = buildAgentsToml()
-            val configToml = baseToml + channelsToml + agentsToml
-
-            if (!validateConfigOrStop(configToml)) return@launch
-
-            val conflict = bridge.detectMemoryConflict(effectiveSettings.memoryBackend)
-            if (conflict is MemoryConflict.StaleData) {
-                val shouldDelete = bridge.awaitConflictResolution(conflict)
-                if (shouldDelete) {
-                    bridge.cleanupStaleMemory(conflict)
-                    logRepository.append(
-                        LogSeverity.INFO,
-                        TAG,
-                        "Cleaned up ${conflict.staleFileCount} stale " +
-                            "${conflict.staleBackend} memory files",
+                val globalConfig =
+                    buildGlobalTomlConfig(effectiveSettings, apiKey)
+                val baseToml = ConfigTomlBuilder.build(globalConfig)
+                val channelsToml =
+                    ConfigTomlBuilder.buildChannelsToml(
+                        channelConfigRepository.getEnabledWithSecrets(),
                     )
-                }
-            }
+                val agentsToml = buildAgentsToml()
+                val configToml = baseToml + channelsToml + agentsToml
 
-            retryPolicy.reset()
-            val validPort =
-                if (settings.port in VALID_PORT_RANGE) {
-                    settings.port
-                } else {
-                    AppSettings.DEFAULT_PORT
+                if (!validateConfigOrStop(configToml)) return@launch
+
+                val conflict = bridge.detectMemoryConflict(effectiveSettings.memoryBackend)
+                if (conflict is MemoryConflict.StaleData) {
+                    val shouldDelete = bridge.awaitConflictResolution(conflict)
+                    if (shouldDelete) {
+                        bridge.cleanupStaleMemory(conflict)
+                        logRepository.append(
+                            LogSeverity.INFO,
+                            TAG,
+                            "Cleaned up ${conflict.staleFileCount} stale " +
+                                "${conflict.staleBackend} memory files",
+                        )
+                    }
                 }
-            attemptStart(
-                configToml = configToml,
-                host = settings.host,
-                port = validPort.toUShort(),
-                memoryBackend = effectiveSettings.memoryBackend,
-            )
+
+                retryPolicy.reset()
+                val validPort =
+                    if (settings.port in VALID_PORT_RANGE) {
+                        settings.port
+                    } else {
+                        AppSettings.DEFAULT_PORT
+                    }
+                attemptStart(
+                    configToml = configToml,
+                    host = settings.host,
+                    port = validPort.toUShort(),
+                    memoryBackend = effectiveSettings.memoryBackend,
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                handleUnexpectedStartupError(
+                    LogSanitizer.sanitizeLogMessage(e.message ?: e.javaClass.simpleName),
+                )
+            }
         }
     }
 
@@ -661,6 +670,15 @@ class ZeroClawDaemonService : Service() {
                                 handleStartupExhausted(errorMsg)
                                 return@launch
                             }
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Throwable) {
+                            handleStartupExhausted(
+                                LogSanitizer.sanitizeLogMessage(
+                                    e.message ?: e.javaClass.simpleName,
+                                ),
+                            )
+                            return@launch
                         }
                     }
                 } finally {
@@ -691,6 +709,22 @@ class ZeroClawDaemonService : Service() {
             errorDetail = errorMsg,
         )
         persistence.recordStopped()
+        releaseWakeLock()
+        stopForeground(STOP_FOREGROUND_DETACH)
+        stopSelf()
+    }
+
+    /**
+     * Handles unexpected startup errors thrown before retry loop starts.
+     *
+     * This prevents fatal coroutine crashes from taking down the app process
+     * when non-FFI runtime exceptions occur while preparing daemon config.
+     */
+    private fun handleUnexpectedStartupError(errorMsg: String) {
+        Log.e(TAG, "Daemon startup aborted by unexpected error: $errorMsg")
+        logRepository.append(LogSeverity.ERROR, TAG, "Startup aborted: $errorMsg")
+        activityRepository.record(ActivityType.DAEMON_ERROR, "Startup aborted: $errorMsg")
+        notificationManager.updateNotification(ServiceState.ERROR, errorDetail = errorMsg)
         releaseWakeLock()
         stopForeground(STOP_FOREGROUND_DETACH)
         stopSelf()
