@@ -6,11 +6,8 @@ variables:
   ANDROID_BUILD_TOOLS: "35.0.0"
   ANDROID_NDK_VERSION: "27.2.12479018"
   CARGO_TERM_COLOR: always
-  # Cache Rust build artifacts between pipelines
   CARGO_HOME: "${CI_PROJECT_DIR}/.cargo"
 
-# ── Cache configuration ───────────────────────────────────────────────────────
-# Caches Rust + Gradle between runs to avoid recompiling everything each time
 .cache_template: &cache_template
   cache:
     - key: rust-$CI_COMMIT_REF_SLUG
@@ -23,7 +20,6 @@ variables:
         - build/
         - app/build/
 
-# ── Build debug APK ───────────────────────────────────────────────────────────
 build-debug-apk:
   stage: build
   image: ubuntu:22.04
@@ -31,28 +27,20 @@ build-debug-apk:
   timeout: 60 minutes
 
   before_script:
-    # Prevent interactive prompts during apt installs
     - export DEBIAN_FRONTEND=noninteractive
 
     # ── System dependencies ──────────────────────────────────────────────────
     - apt-get update -qq
-    - apt-get install -y -qq
-        curl
-        wget
-        unzip
-        git
-        ca-certificates
-        gnupg
+    - apt-get install -y -qq curl wget unzip git ca-certificates gnupg openjdk-17-jdk
 
     # ── Java 17 ─────────────────────────────────────────────────────────────
-    - apt-get install -y -qq openjdk-17-jdk
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     - export PATH=$JAVA_HOME/bin:$PATH
     - java -version
 
-    # ── Android SDK ──────────────────────────────────────────────────────────
-    - export ANDROID_HOME=/opt/android-sdk
-    - export ANDROID_SDK_ROOT=/opt/android-sdk
+    # ── Android SDK (install to home dir — no permission issues) ─────────────
+    - export ANDROID_HOME=$HOME/android-sdk
+    - export ANDROID_SDK_ROOT=$HOME/android-sdk
     - mkdir -p $ANDROID_HOME/cmdline-tools
     - wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
     - unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools-extract
@@ -60,8 +48,12 @@ build-debug-apk:
     - rm -rf /tmp/cmdline-tools.zip /tmp/cmdline-tools-extract
     - export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
-    # Accept licenses and install components
-    - yes | sdkmanager --licenses > /dev/null 2>&1
+    # Write licenses directly — avoids yes pipe failures
+    - mkdir -p $ANDROID_HOME/licenses
+    - printf '8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee' > $ANDROID_HOME/licenses/android-sdk-license
+    - printf '84831b9409646a918e30573bab4c9c91346d8abd\nd975f751698a77b662f1254ddbeed3901e976f5a' > $ANDROID_HOME/licenses/android-sdk-preview-license
+
+    # Install SDK components
     - sdkmanager "platform-tools" "platforms;android-${ANDROID_COMPILE_SDK}" "build-tools;${ANDROID_BUILD_TOOLS}" "ndk;${ANDROID_NDK_VERSION}"
     - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$ANDROID_NDK_VERSION
 
