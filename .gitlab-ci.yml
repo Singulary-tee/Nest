@@ -1,0 +1,79 @@
+stages:
+  - build
+
+variables:
+  CARGO_TERM_COLOR: always
+
+build-debug-apk:
+  stage: build
+  image: ubuntu:22.04
+  timeout: 35 minutes
+
+  before_script:
+    # Install system dependencies first — bare Ubuntu has nothing
+    - apt-get update -qq
+    - apt-get install -y -qq wget curl unzip git openjdk-17-jdk build-essential
+
+    # checkout with submodules (actions/checkout@v4 with submodules: recursive)
+    - git submodule update --init --recursive
+
+    # Apply submodule patches
+    - if ls patches/*.patch 1>/dev/null 2>&1; then cd zeroclaw && git apply ../patches/*.patch; fi
+
+    # Ensure embedded web assets exist
+    - mkdir -p zeroclaw/web/dist
+    - |
+      if [ ! -f zeroclaw/web/dist/index.html ]; then
+        printf '%s\n' '<!doctype html><html><body>OpenClaw Web UI placeholder</body></html>' > zeroclaw/web/dist/index.html
+      fi
+
+    # actions/setup-java@v4 (temurin, java 17)
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    - export PATH=$JAVA_HOME/bin:$PATH
+
+    # android-actions/setup-android@v3
+    - mkdir -p $HOME/android-sdk/cmdline-tools
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdline-tools.zip
+    - unzip -q /tmp/cmdline-tools.zip -d /tmp/ct
+    - mv /tmp/ct/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+    - rm -rf /tmp/cmdline-tools.zip /tmp/ct
+    - export ANDROID_HOME=$HOME/android-sdk
+    - export ANDROID_SDK_ROOT=$HOME/android-sdk
+    - export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+    - mkdir -p $ANDROID_HOME/licenses
+    - printf '8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee' > $ANDROID_HOME/licenses/android-sdk-license
+    - printf '84831b9409646a918e30573bab4c9c91346d8abd\nd975f751698a77b662f1254ddbeed3901e976f5a' > $ANDROID_HOME/licenses/android-sdk-preview-license
+    - sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+    # Install NDK
+    - sdkmanager "ndk;27.2.12479018"
+    - export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018
+
+    # dtolnay/rust-toolchain@stable with targets
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+    - export PATH=$HOME/.cargo/bin:$PATH
+    - rustup target add aarch64-linux-android x86_64-linux-android
+
+    # Install cargo-ndk
+    - cargo install cargo-ndk
+
+    # gradle/actions/setup-gradle@v4
+    - chmod +x ./gradlew
+
+  script:
+    # Kotlin formatting and static checks
+    - ./gradlew spotlessCheck detekt
+
+    # Build debug APK
+    - ./gradlew :app:assembleDebug
+
+  artifacts:
+    name: "phoneclaw-debug-apk"
+    paths:
+      - app/build/outputs/apk/debug/phoneclaw.apk
+    expire_in: 7 days
+    when: on_success
+
+  only:
+    - main
+    - merge_requests
