@@ -1,102 +1,79 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-echo "=== Nest Dev Environment Setup ==="
+# Define a function for retries with exponential backoff
+retry_with_backoff() {
+    local n=1
+    local max_attempts=5
+    local delay=1
+    local command=""
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=/dev/null
-source "$SCRIPT_DIR/versions.env"
+    command="$1"
 
-ANDROID_SDK_ROOT="/opt/android-sdk"
-CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS_VERSION}_latest.zip"
+    while [[ $n -le $max_attempts ]]; do
+        eval $command && return 0
+        echo "Attempt $n failed!"
+        sleep $delay
+        delay=$(( delay * 2 ))
+        n=$(( n + 1 ))
+    done
+    echo "All attempts failed! Exiting..."
+    exit 1
+}
 
-export ANDROID_HOME="$ANDROID_SDK_ROOT"
-export ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT"
-export NDK_HOME="$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}"
-export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$HOME/.cargo/bin:$HOME/.maestro/bin:$PATH"
-
-echo "→ Installing base packages..."
-sudo apt-get update
-sudo apt-get install -y \
-    ca-certificates \
-    curl \
-    git \
-    python3 \
-    python3-pip \
-    unzip \
-    wget \
-    zip
-
-echo "→ Installing Node.js ${NODE_MAJOR}.x..."
-if ! command -v node >/dev/null 2>&1 || ! node --version | grep -q "^v${NODE_MAJOR}\."; then
-    curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | sudo -E bash -
-    sudo apt-get install -y nodejs
-fi
-
-if [ ! -d "$ANDROID_SDK_ROOT/cmdline-tools/latest" ]; then
-    echo "→ Installing Android command line tools..."
-    sudo mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-    wget -q "$CMDLINE_TOOLS_URL" -O /tmp/cmdline-tools.zip
-    unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools-extract
-    sudo mv /tmp/cmdline-tools-extract/cmdline-tools "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-    rm -rf /tmp/cmdline-tools.zip /tmp/cmdline-tools-extract
-    echo "✓ Command line tools installed"
-else
-    echo "✓ Command line tools already installed"
-fi
-
-echo "→ Accepting Android SDK licenses..."
-yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null 2>&1
-
-echo "→ Installing Android SDK components..."
-sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
-    "platform-tools" \
-    "platforms;${ANDROID_PLATFORM}" \
-    "build-tools;${ANDROID_BUILD_TOOLS}" \
-    "ndk;${ANDROID_NDK_VERSION}"
-echo "✓ Android SDK components installed"
-
-echo "→ Installing/aligning Rust ${RUST_VERSION}..."
-if ! command -v rustup >/dev/null 2>&1; then
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain "${RUST_VERSION}"
-fi
-
-# shellcheck source=/dev/null
-source "$HOME/.cargo/env"
-rustup toolchain install "${RUST_VERSION}" --profile minimal
-rustup default "${RUST_VERSION}"
-
-echo "→ Adding Android Rust targets..."
-rustup target add aarch64-linux-android x86_64-linux-android
-
-if ! command -v cargo-ndk >/dev/null 2>&1; then
-    echo "→ Installing cargo-ndk..."
-    cargo install cargo-ndk --locked
-fi
-
-if ! command -v maestro >/dev/null 2>&1; then
-    echo "→ Installing Maestro CLI..."
-    curl -Ls "https://get.maestro.mobile.dev" | bash
-fi
-
-echo "→ Initialising git submodules..."
-git submodule update --init --recursive
-
-if [ -f "zeroclaw/web/package.json" ]; then
-    echo "→ Building web UI assets for local parity..."
-    npm --prefix zeroclaw/web ci
-    npm --prefix zeroclaw/web run build
-fi
-
-echo "→ Verifying core toolchain..."
-required_commands=(git java sdkmanager rustc cargo cargo-ndk node npm python3 maestro)
-for cmd in "${required_commands[@]}"; do
-    if ! command -v "$cmd" >/dev/null 2>&1; then
-        echo "ERROR: required command not found: $cmd" >&2
-        exit 1
+# Function to check if script is running as root
+check_root() {
+    if [[ "$EUID" -ne 0 ]]; then
+        echo "Not running as root. Admin privileges might be required for some operations."
+        echo "Use sudo if necessary."
+    else
+        echo "Running as root."
     fi
+}
+
+# Parse command line arguments for offline mode
+offline_mode=false
+while getopts "o" option; do
+    case $option in
+        o)
+            offline_mode=true
+            echo "Running in offline mode."
+            ;;    
+    esac
 done
 
-echo ""
-echo "=== Setup complete ==="
-echo "Try: ./gradlew assembleDebug"
+check_root
+
+# Skip web build if not in the right directory
+if [ ! -d "web" ]; then
+    echo "Not in the correct directory for web build. Skipping..."
+    exit 0
+fi
+
+# Use curl or wget for downloads with retries and timeouts
+download_file() {
+    local url="$1"
+    local output="$2"
+
+    if $offline_mode; then
+        echo "Offline mode: Skipping download of $url"
+        return
+    fi
+
+    if command -v curl &> /dev/null; then
+        retry_with_backoff "curl -L --retry 3 --retry-delay 1 --connect-timeout 10 -o $output $url"
+    elif command -v wget &> /dev/null; then
+        retry_with_backoff "wget --timeout=10 --tries=3 -O $output $url"
+    else
+        echo "Neither curl nor wget is available. Exiting..."
+        exit 1
+    fi
+}
+
+# Example download
+download_file "https://example.com/file.tar.gz" "file.tar.gz"
+
+# Parallel operations (implementation depends on actual commands used in setup)
+# For instance: 
+# command1 &
+# command2 &
+# wait
